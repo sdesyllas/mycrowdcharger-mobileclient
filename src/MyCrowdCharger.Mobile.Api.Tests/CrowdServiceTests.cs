@@ -82,5 +82,42 @@ namespace MyCrowdCharger.Mobile.Api.Tests
             devices.Should().NotBeNull();
             devices.Count.Should().BeGreaterThan(1);
         }
+
+        [Fact]
+        public void GetDevices_WhenDeviceExist_ReturnDevice()
+        {
+            //Arrange
+            var mockLog = new Mock<ILog>();
+            mockLog.Setup(x => x.Debug(It.IsAny<string>())).Callback<string>(s => _output.WriteLine(s));
+            var crowdService = new CrowdService(mockLog.Object);
+
+            //Act
+            var device = crowdService.GetDeviceByName("Fenia");
+
+            //Assert
+            mockLog.Verify(x => x.Debug(It.IsAny<string>()), Times.Exactly(2));
+            device.Should().NotBeNull();
+            device.Name.Should().Be("Fenia");
+            device.Nickname.Should().Be("Fenia");
+            device.BatteryLevel.Should().BePositive();
+            device.Contributions.Should().BePositive();
+        }
+
+        [Fact]
+        public void GetDevices_WhenDeviceDoesNotExist_ReturnNull()
+        {
+            //Arrange
+            var mockLog = new Mock<ILog>();
+            mockLog.Setup(x => x.Debug(It.IsAny<string>())).Callback<string>(s => _output.WriteLine(s));
+            var crowdService = new CrowdService(mockLog.Object);
+
+            //Act
+            var device = crowdService.GetDeviceByName("Morgana");
+
+            //Assert
+            mockLog.Verify(x => x.Debug(It.IsAny<string>()), Times.Exactly(1));
+            mockLog.Verify(x => x.Error(It.IsAny<string>(), It.IsAny<Exception>()), Times.Exactly(1));
+            device.Should().BeNull();
+        }
     }
 }

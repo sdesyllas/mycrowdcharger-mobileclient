@@ -42,7 +42,21 @@ namespace MyCrowdCharger.Mobile.Api.Services
 
         public Device GetDeviceByName(string name)
         {
-            throw new NotImplementedException();
+            _log.Debug($"GET: {ServiceUrl}/device/{name}");
+            var client = new HttpClient();
+            client.DefaultRequestHeaders.Accept.Clear();
+            try
+            {
+                var response = client.GetStringAsync($"{ServiceUrl}/device/{name}").Result;
+                var responseDevice = JsonConvert.DeserializeObject<DeviceResult>(response);
+                _log.Debug($"GET: {ServiceUrl}/device | success: {responseDevice}");
+                return responseDevice.Result;
+            }
+            catch (Exception exception)
+            {
+                _log.Error("", exception);
+                return null;
+            }
         }
 
         public bool DeleteDeviceByName(string name)
