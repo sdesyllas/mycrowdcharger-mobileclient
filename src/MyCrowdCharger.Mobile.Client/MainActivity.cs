@@ -1,6 +1,7 @@
 ﻿using Android.App;
 using Android.Widget;
 using Android.OS;
+using MyCrowdCharger.Mobile.Api.Services;
 
 namespace MyCrowdCharger.Mobile.Client
 {

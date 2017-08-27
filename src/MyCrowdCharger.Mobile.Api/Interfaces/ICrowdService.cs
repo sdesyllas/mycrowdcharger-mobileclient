@@ -11,6 +11,8 @@ namespace MyCrowdCharger.Mobile.Api.Interfaces
 
         Device GetDeviceByName(string name);
 
+        bool DeleteDeviceByName(string name);
+
         Device RegisterDevice(Device newDevice);
 
         Device RefreshDevice(Device device);
