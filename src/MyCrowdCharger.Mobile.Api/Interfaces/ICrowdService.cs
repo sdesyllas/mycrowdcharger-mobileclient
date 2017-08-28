@@ -19,6 +19,6 @@ namespace MyCrowdCharger.Mobile.Api.Interfaces
 
         bool SendBattery(BatterySend batterySendInfo);
 
-        List<Device> GetNearestDevicesToDeviceLocation(Device device);
+        List<Device> GetNearestDevicesToDeviceLocation(string deviceName);
     }
 }

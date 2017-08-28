@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using MyCrowdCharger.Mobile.Api.Dtos;
@@ -92,17 +93,71 @@ namespace MyCrowdCharger.Mobile.Api.Services
 
         public Device RefreshDevice(Device device)
         {
-            throw new NotImplementedException();
+            _log.Debug($"POST: {ServiceUrl}/refresh | payload: {device}");
+            var client = new HttpClient();
+            client.DefaultRequestHeaders.Accept.Clear();
+
+            var buffer = System.Text.Encoding.UTF8.GetBytes(device.ToString());
+            var byteContent = new ByteArrayContent(buffer);
+            byteContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+            var response = client.PostAsync($"{ServiceUrl}/refresh", byteContent).Result;
+            if (response.StatusCode == HttpStatusCode.NotFound)
+            {
+                _log.Warning($"POST: {ServiceUrl}/refresh with name {device.Name}| not found 404");
+                return null;
+            }
+            _log.Debug(response.Content.ReadAsStringAsync().Result);
+            if (!response.IsSuccessStatusCode) return null;
+            var responseDevice = JsonConvert.DeserializeObject<DeviceResult>(response.Content.ReadAsStringAsync().Result);
+            _log.Debug($"POST: {ServiceUrl}/refresh | success: {responseDevice}");
+            return responseDevice.Result;
         }
 
         public bool SendBattery(BatterySend batterySendInfo)
         {
-            throw new NotImplementedException();
+            _log.Debug($"POST: {ServiceUrl}/sendbattery | payload: {batterySendInfo}");
+            var client = new HttpClient();
+            client.DefaultRequestHeaders.Accept.Clear();
+
+            var buffer = System.Text.Encoding.UTF8.GetBytes(batterySendInfo.ToString());
+            var byteContent = new ByteArrayContent(buffer);
+            byteContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+            var response = client.PostAsync($"{ServiceUrl}/sendbattery", byteContent).Result;
+            switch (response.StatusCode)
+            {
+                case HttpStatusCode.NotFound:
+                    _log.Warning($"POST: {ServiceUrl}/sendbattery sender or recipient device not found | 404");
+                    return false;
+                case HttpStatusCode.BadRequest:
+                    _log.Warning($"POST: {ServiceUrl}/sendbattery insufficient battery levels of the sender | 400");
+                    return false;
+                case HttpStatusCode.InternalServerError:
+                    _log.Warning($"POST: {ServiceUrl}/sendbattery sender or recipient does not exist | 500");
+                    return false;
+            }
+            _log.Debug(response.Content.ReadAsStringAsync().Result);
+            if (!response.IsSuccessStatusCode) return false;
+            _log.Debug($"POST: {ServiceUrl}/sendbattery | success");
+            return true;
         }
 
-        public List<Device> GetNearestDevicesToDeviceLocation(Device device)
+        public List<Device> GetNearestDevicesToDeviceLocation(string deviceName)
         {
-            throw new NotImplementedException();
+            _log.Debug($"GET: {ServiceUrl}/getnearesttodevice/{deviceName}");
+            var client = new HttpClient();
+            client.DefaultRequestHeaders.Accept.Clear();
+            try
+            {
+                var response = client.GetStringAsync($"{ServiceUrl}/getnearesttodevice/{deviceName}").Result;
+                var responseDevices = JsonConvert.DeserializeObject<DevicesResult>(response);
+                _log.Debug($"GET: {ServiceUrl}/getnearesttodevice/{deviceName} | success: {responseDevices}");
+                return responseDevices.Result;
+            }
+            catch (Exception exception)
+            {
+                _log.Error("", exception);
+                return null;
+            }
         }
     }
 }

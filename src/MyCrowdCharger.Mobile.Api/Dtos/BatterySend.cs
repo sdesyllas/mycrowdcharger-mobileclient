@@ -2,7 +2,7 @@
 
 namespace MyCrowdCharger.Mobile.Api.Dtos
 {
-    public class BatterySend
+    public class BatterySend : JsonSerializable
     {
         [JsonProperty("sender")]
         public Sender SenderUser { get; set; }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using MyCrowdCharger.Mobile.Api.Interfaces;
 using FluentAssertions;
 using Moq;
@@ -40,12 +41,25 @@ namespace MyCrowdCharger.Mobile.Api.Tests
                 Name = "Fenia",
                 Nickname = "Fenia"
             };
+
+            // create a distant device 
+            // devices next to each other in an address in London, distant in university of Piraeus
+            var unipiDevice = new Device
+            {
+                BatteryLevel = 80,
+                Contributions = 1,
+                Location = new[] { 37.941650, 23.653525 },
+                Name = "UnipiDevice",
+                Nickname = "UnipiDevice"
+            };
+            _crowdService.RegisterDevice(unipiDevice);
             _crowdService.RegisterDevice(device1);
             _crowdService.RegisterDevice(device2);
         }
 
         public void Dispose()
         {
+            _crowdService.DeleteDeviceByName("UnipiDevice");
             _crowdService.DeleteDeviceByName("Spyros");
             _crowdService.DeleteDeviceByName("Fenia");
         }
@@ -84,7 +98,7 @@ namespace MyCrowdCharger.Mobile.Api.Tests
         }
 
         [Fact]
-        public void GetDevices_WhenDeviceExist_ReturnDevice()
+        public void GetDevice_WhenDeviceExist_ReturnDevice()
         {
             //Arrange
             var mockLog = new Mock<ILog>();
@@ -104,7 +118,7 @@ namespace MyCrowdCharger.Mobile.Api.Tests
         }
 
         [Fact]
-        public void GetDevices_WhenDeviceDoesNotExist_ReturnNull()
+        public void GetDevice_WhenDeviceDoesNotExist_ReturnNull()
         {
             //Arrange
             var mockLog = new Mock<ILog>();
@@ -118,6 +132,205 @@ namespace MyCrowdCharger.Mobile.Api.Tests
             mockLog.Verify(x => x.Debug(It.IsAny<string>()), Times.Exactly(1));
             mockLog.Verify(x => x.Error(It.IsAny<string>(), It.IsAny<Exception>()), Times.Exactly(1));
             device.Should().BeNull();
+        }
+
+        [Fact]
+        public void RegisterDevice_WhenDeviceExists_ReturnNull()
+        {
+            //Arrange
+            var mockLog = new Mock<ILog>();
+            mockLog.Setup(x => x.Debug(It.IsAny<string>())).Callback<string>(s => _output.WriteLine(s));
+            var crowdService = new CrowdService(mockLog.Object);
+
+            var device = new Device
+            {
+                BatteryLevel = 80,
+                Contributions = 1,
+                Location = new[] {51.649829, -0.188136},
+                Name = "Spyros",
+                Nickname = "Spyros"
+            };
+
+            //Act
+            var responseDevice = crowdService.RegisterDevice(device);
+
+            //Assert
+            mockLog.Verify(x => x.Debug(It.IsAny<string>()), Times.Exactly(1));
+            responseDevice.Should().BeNull();
+        }
+
+        [Fact]
+        public void GetNearestDevicesToDeviceLocation_WhenADeviceIsNear_ReturnThisDevice()
+        {
+            //Arrange
+            var mockLog = new Mock<ILog>();
+            mockLog.Setup(x => x.Debug(It.IsAny<string>())).Callback<string>(s => _output.WriteLine(s));
+            var crowdService = new CrowdService(mockLog.Object);
+
+            //Act
+            var nearestDevices = crowdService.GetNearestDevicesToDeviceLocation("Spyros");
+
+            //Assert
+            mockLog.Verify(x => x.Debug(It.IsAny<string>()), Times.Exactly(2));
+            nearestDevices.Count.Should().Be(1);
+            var nearestDevice = nearestDevices.FirstOrDefault(x=>x.Name == "Fenia");
+            var unipiDevice = nearestDevices.FirstOrDefault(x => x.Name == "UnipiDevice");
+            unipiDevice.Should().BeNull();
+            nearestDevice.Name.Should().Be("Fenia");
+            nearestDevice.Location[0].Should().Be(51.651047);
+            nearestDevice.Location[1].Should().Be(-0.186956);
+        }
+
+        [Fact]
+        public void GetNearestDevicesToDeviceLocation_WhenNoDevicesAreNear_ReturnNoDevices()
+        {
+            //Arrange
+            var mockLog = new Mock<ILog>();
+            mockLog.Setup(x => x.Debug(It.IsAny<string>())).Callback<string>(s => _output.WriteLine(s));
+            var crowdService = new CrowdService(mockLog.Object);
+
+            //Act
+            var nearestDevices = crowdService.GetNearestDevicesToDeviceLocation("UnipiDevice");
+
+            //Assert
+            mockLog.Verify(x => x.Debug(It.IsAny<string>()), Times.Exactly(2));
+            nearestDevices.Count.Should().Be(0);
+        }
+
+        [Fact]
+        public void RefreshDevice_WhenBatteryOrLocationChanges_RefreshDeviceInDataContext()
+        {
+            //Arrange
+            var mockLog = new Mock<ILog>();
+            mockLog.Setup(x => x.Debug(It.IsAny<string>())).Callback<string>(s => _output.WriteLine(s));
+            var crowdService = new CrowdService(mockLog.Object);
+            var device = crowdService.GetDeviceByName("Spyros");
+
+            var newBatteryLevel = 65;
+            var newLong = 51.651892;
+            var newLat = -0.186819;
+
+            device.BatteryLevel = newBatteryLevel;
+            device.Location[0] = newLong;
+            device.Location[1] = newLat;
+            //Act
+            var refreshedDevice = crowdService.RefreshDevice(device);
+
+            //Assert
+            mockLog.Verify(x => x.Debug(It.IsAny<string>()), Times.Exactly(5));
+            refreshedDevice.Should().NotBeNull();
+            refreshedDevice.Name.Should().Be("Spyros");
+            refreshedDevice.BatteryLevel = 65;
+            refreshedDevice.Location[0].Should().Be(newLong);
+            refreshedDevice.Location[1].Should().Be(newLat);
+        }
+
+        [Fact]
+        public void RefreshDevice_WhenDeviceDoesNotExist_ReturnNull()
+        {
+            //Arrange
+            var mockLog = new Mock<ILog>();
+            mockLog.Setup(x => x.Debug(It.IsAny<string>())).Callback<string>(s => _output.WriteLine(s));
+            var crowdService = new CrowdService(mockLog.Object);
+
+            var device = new Device
+            {
+                BatteryLevel = 80,
+                Contributions = 1,
+                Location = new[] { 51.651047, -0.186956 },
+                Name = "Morgana",
+                Nickname = "Morgana"
+            };
+
+            //Act
+            var refreshedDevice = crowdService.RefreshDevice(device);
+
+            //Assert
+            mockLog.Verify(x => x.Warning(It.IsAny<string>()), Times.Exactly(1));
+            refreshedDevice.Should().BeNull();
+        }
+
+        [Fact]
+        public void SendBattery_RecipientSufficientLevels_SuccesfullySendBattery()
+        {
+            //Arrange
+            var mockLog = new Mock<ILog>();
+            mockLog.Setup(x => x.Debug(It.IsAny<string>())).Callback<string>(s => _output.WriteLine(s));
+            var crowdService = new CrowdService(mockLog.Object);
+
+            var batterySendInfo = new BatterySend
+            {
+                SenderUser = new BatterySend.Sender() {Name = "Spyros", Battery = 15},
+                RecipientUser = new BatterySend.Recipient() {Name = "Fenia" }
+            };
+
+            //Act
+            var hasSendBattery = crowdService.SendBattery(batterySendInfo);
+
+            //Assert
+            var refreshedSender = crowdService.GetDeviceByName("Spyros");
+            var refreshedRecipient = crowdService.GetDeviceByName("Fenia");
+
+            mockLog.Verify(x => x.Debug(It.IsAny<string>()), Times.Exactly(7));
+            hasSendBattery.Should().BeTrue();
+            refreshedSender.BatteryLevel.Should().Be(65);
+            refreshedRecipient.BatteryLevel.Should().Be(95);
+        }
+
+        [Fact]
+        public void SendBattery_SenderInsufficientLevels_DoNotSendBattery()
+        {
+            //Arrange
+            var mockLog = new Mock<ILog>();
+            mockLog.Setup(x => x.Debug(It.IsAny<string>())).Callback<string>(s => _output.WriteLine(s));
+            mockLog.Setup(x => x.Warning(It.IsAny<string>())).Callback<string>(s => _output.WriteLine(s));
+            var crowdService = new CrowdService(mockLog.Object);
+
+            var batterySendInfo = new BatterySend
+            {
+                SenderUser = new BatterySend.Sender() { Name = "Spyros", Battery = 81 },
+                RecipientUser = new BatterySend.Recipient() { Name = "Fenia" }
+            };
+
+            //Act
+            var hasSendBattery = crowdService.SendBattery(batterySendInfo);
+
+            //Assert
+            var refreshedSender = crowdService.GetDeviceByName("Spyros");
+            var refreshedRecipient = crowdService.GetDeviceByName("Fenia");
+
+            mockLog.Verify(x => x.Warning(It.IsAny<string>()), Times.Exactly(1));
+            hasSendBattery.Should().BeFalse();
+            refreshedSender.BatteryLevel.Should().Be(80);
+            refreshedRecipient.BatteryLevel.Should().Be(80);
+        }
+
+        [Fact]
+        public void SendBattery_RecipientDoesNotExist_DoNotSendBattery()
+        {
+            //Arrange
+            var mockLog = new Mock<ILog>();
+            mockLog.Setup(x => x.Debug(It.IsAny<string>())).Callback<string>(s => _output.WriteLine(s));
+            mockLog.Setup(x => x.Warning(It.IsAny<string>())).Callback<string>(s => _output.WriteLine(s));
+            var crowdService = new CrowdService(mockLog.Object);
+
+            var batterySendInfo = new BatterySend
+            {
+                SenderUser = new BatterySend.Sender() { Name = "Spyros", Battery = 81 },
+                RecipientUser = new BatterySend.Recipient() { Name = "Morgana" }
+            };
+
+            //Act
+            var hasSendBattery = crowdService.SendBattery(batterySendInfo);
+
+            //Assert
+            var refreshedSender = crowdService.GetDeviceByName("Spyros");
+            var refreshedRecipient = crowdService.GetDeviceByName("Fenia");
+
+            mockLog.Verify(x => x.Warning(It.IsAny<string>()), Times.Exactly(1));
+            hasSendBattery.Should().BeFalse();
+            refreshedSender.BatteryLevel.Should().Be(80);
+            refreshedRecipient.BatteryLevel.Should().Be(80);
         }
     }
 }
