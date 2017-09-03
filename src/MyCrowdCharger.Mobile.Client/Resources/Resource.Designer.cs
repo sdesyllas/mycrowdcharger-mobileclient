@@ -47,32 +47,38 @@ namespace MyCrowdCharger.Mobile.Client
 			// aapt resource value: 0x7f050000
 			public const int batteryText = 2131034112;
 			
-			// aapt resource value: 0x7f050005
-			public const int deleteDevice = 2131034117;
+			// aapt resource value: 0x7f050001
+			public const int contributionsText = 2131034113;
 			
-			// aapt resource value: 0x7f050006
-			public const int deviceAddressInfo = 2131034118;
+			// aapt resource value: 0x7f050007
+			public const int deleteDevice = 2131034119;
+			
+			// aapt resource value: 0x7f050008
+			public const int deviceAddressInfo = 2131034120;
 			
 			// aapt resource value: 0x7f050002
 			public const int deviceInfo = 2131034114;
 			
+			// aapt resource value: 0x7f050005
+			public const int devicesList = 2131034117;
+			
+			// aapt resource value: 0x7f050006
+			public const int findDevices = 2131034118;
+			
+			// aapt resource value: 0x7f05000b
+			public const int goBackButton = 2131034123;
+			
 			// aapt resource value: 0x7f050003
-			public const int devicesList = 2131034115;
+			public const int locationInfoText = 2131034115;
 			
 			// aapt resource value: 0x7f050004
-			public const int findDevices = 2131034116;
+			public const int locationText = 2131034116;
 			
 			// aapt resource value: 0x7f050009
-			public const int goBackButton = 2131034121;
+			public const int nickName = 2131034121;
 			
-			// aapt resource value: 0x7f050001
-			public const int locationText = 2131034113;
-			
-			// aapt resource value: 0x7f050007
-			public const int nickName = 2131034119;
-			
-			// aapt resource value: 0x7f050008
-			public const int registerButton = 2131034120;
+			// aapt resource value: 0x7f05000a
+			public const int registerButton = 2131034122;
 			
 			static Id()
 			{
@@ -139,6 +145,9 @@ namespace MyCrowdCharger.Mobile.Client
 			
 			// aapt resource value: 0x7f040000
 			public const int hello = 2130968576;
+			
+			// aapt resource value: 0x7f040006
+			public const int helpUserTap = 2130968582;
 			
 			// aapt resource value: 0x7f040002
 			public const int registerDeviceBtn = 2130968578;

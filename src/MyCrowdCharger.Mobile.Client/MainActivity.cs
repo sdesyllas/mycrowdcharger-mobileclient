@@ -2,13 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using Android.App;
-using Android.Content;
 using Android.Locations;
 using Android.Widget;
 using Android.OS;
 using Android.Provider;
 using Android.Util;
-using Android.Views;
 using MyCrowdCharger.Mobile.Api.Dtos;
 using MyCrowdCharger.Mobile.Api.Interfaces;
 using MyCrowdCharger.Mobile.Api.Services;
@@ -28,6 +26,8 @@ namespace MyCrowdCharger.Mobile.Client
         private TextView deviceInfo;
         private TextView locationText;
         private TextView batteryText;
+        private TextView contributionsText;
+        private TextView locationInfoText;
 
         private Device _currentDevice;
 
@@ -49,7 +49,10 @@ namespace MyCrowdCharger.Mobile.Client
             // and attach an event to it
             Button button = FindViewById<Button>(Resource.Id.findDevices);
             Button deleteButton = FindViewById<Button>(Resource.Id.deleteDevice);
+
             batteryText = FindViewById<TextView>(Resource.Id.batteryText);
+            contributionsText = FindViewById<TextView>(Resource.Id.contributionsText);
+            locationInfoText = FindViewById<TextView>(Resource.Id.locationInfoText);
 
             button.Click += FindAvailableDevices;
             deleteButton.Click += DeleteDevice;
@@ -67,9 +70,22 @@ namespace MyCrowdCharger.Mobile.Client
             }
             else
             {
+                this.Title = $"{_currentDevice.Nickname} - battery: {_currentDevice.BatteryLevel}%";
                 batteryText.Text = $"Battery: {_currentDevice.BatteryLevel}%";
+                contributionsText.Text = $"contributed: {_currentDevice.Contributions}";
+               
                 deviceInfo.Text = _currentDevice.ToString();
             }
+        }
+
+        protected Address ReverseGeocodeCurrentLocation()
+        {
+            Geocoder geocoder = new Geocoder(this);
+            IList<Address> addressList =
+                geocoder.GetFromLocationAsync(_currentLocation.Latitude, _currentLocation.Longitude, 10).Result;
+
+            Address address = addressList.FirstOrDefault();
+            return address;
         }
 
         protected void DisplayBatteryLevel()
@@ -78,6 +94,7 @@ namespace MyCrowdCharger.Mobile.Client
             if (_currentDevice != null)
             {
                 batteryText.Text = $"Battery: {_currentDevice.BatteryLevel}%";
+                this.Title = $"{_currentDevice.Nickname} - battery: {_currentDevice.BatteryLevel}%";
             }
         }
 
@@ -122,6 +139,11 @@ namespace MyCrowdCharger.Mobile.Client
                 _currentDevice.Location[0] = location.Longitude;
                 _currentDevice.Location[1] = location.Latitude;
                 _currentDevice = _crowdService.RefreshDevice(_currentDevice);
+                var address = ReverseGeocodeCurrentLocation();
+                if (address != null)
+                {
+                    locationInfoText.Text = $"{address.CountryName}, {address.PostalCode}, {address.Locality}, {address.SubAdminArea}";
+                }
                 Toast.MakeText(this, $"{_currentDevice.Nickname} location refreshed", ToastLength.Short);
             }
         }

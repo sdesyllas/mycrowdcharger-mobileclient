@@ -1,14 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Linq;
 using Android.App;
-using Android.Content;
-using Android.Locations;
 using Android.OS;
 using Android.Provider;
-using Android.Runtime;
 using Android.Views;
 using Android.Widget;
 using MyCrowdCharger.Mobile.Api.Dtos;
@@ -28,23 +21,23 @@ namespace MyCrowdCharger.Mobile.Client
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
+            this.Title = "Tap to get battery!";
 
             _logService = new XamarinLogService();
             _crowdService = new CrowdService(_logService);
 
             PopulateNearestDevices();
-            var androidId = Settings.Secure.GetString(ContentResolver, Settings.Secure.AndroidId);
-            _currentDevice = _crowdService.GetDeviceByName(androidId);
-            
+        
             ListView.TextFilterEnabled = true;
-
         }
 
         protected void PopulateNearestDevices()
         {
             var androidId = Settings.Secure.GetString(ContentResolver, Settings.Secure.AndroidId);
             nearestDevices = _crowdService.GetNearestDevicesToDeviceLocation(androidId).ToArray();
+
             ListAdapter = new DevicesAdapter(this, nearestDevices.ToArray());
+            _currentDevice = _crowdService.GetDeviceByName(androidId);
         }
 
         protected override void OnListItemClick(ListView l, View v, int position, long id)
@@ -68,6 +61,7 @@ namespace MyCrowdCharger.Mobile.Client
             {
                 Toast.MakeText(this, batterySend.ToString(), ToastLength.Short).Show();
                 PopulateNearestDevices();
+                this.Title = $"{_currentDevice.Nickname} - battery: {_currentDevice.BatteryLevel}%";
             }
             else
             {
@@ -103,7 +97,7 @@ namespace MyCrowdCharger.Mobile.Client
                     view = context.LayoutInflater.Inflate(Android.Resource.Layout.SimpleListItem1, null);
                 var currentItem = items[position];
                 view.FindViewById<TextView>(Android.Resource.Id.Text1).Text =
-                    $"{currentItem.Nickname} battery:{currentItem.BatteryLevel}%|{currentItem.Contributions} contributions";
+                    $"{currentItem.Nickname} battery:{currentItem.BatteryLevel}% | {currentItem.Contributions} contributions";
                 return view;
             }
         }

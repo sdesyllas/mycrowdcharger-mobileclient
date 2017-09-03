@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp1.1</TargetFramework>
+    <Copyright>University of Piraeus</Copyright>
   </PropertyGroup>
 
   <ItemGroup>

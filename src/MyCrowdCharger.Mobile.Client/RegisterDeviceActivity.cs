@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Android.App;
 using Android.Content;
 using Android.Locations;
@@ -37,6 +35,7 @@ namespace MyCrowdCharger.Mobile.Client
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
+
             _logService = new XamarinLogService();
             _crowdService = new CrowdService(_logService);
             InitializeLocationManager();
