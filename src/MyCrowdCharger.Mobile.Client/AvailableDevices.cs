@@ -97,7 +97,7 @@ namespace MyCrowdCharger.Mobile.Client
                     view = context.LayoutInflater.Inflate(Android.Resource.Layout.SimpleListItem1, null);
                 var currentItem = items[position];
                 view.FindViewById<TextView>(Android.Resource.Id.Text1).Text =
-                    $"{currentItem.Nickname} battery:{currentItem.BatteryLevel}% | {currentItem.Contributions} contributions";
+                    $"{currentItem.Nickname} battery: {currentItem.BatteryLevel}% | {currentItem.Contributions} contributions";
                 return view;
             }
         }
