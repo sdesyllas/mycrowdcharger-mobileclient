@@ -9,4 +9,4 @@ This thesis work depends on crowdsourcing and finding a sufficient number of pee
 
 This is a Thesis project for University of Piraeus supervised by Lecturer Efthimios Alepis
 
-[download apk](https://www.dropbox.com/s/wkqfi1qldaqxmx2/CrowdCharger.CrowdCharger.apk?dl=0)
+[download apk](https://www.dropbox.com/s/40k868318ezmct9/MyCrowdCharger.MyCrowdCharger.apk?dl=0)
