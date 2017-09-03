@@ -2,4 +2,8 @@
 <resources>
   <string name="hello">Hello World, Click Me!</string>
   <string name="app_name">MyCrowdCharger.Mobile.Client</string>
+  <string name="registerDeviceBtn">Register new device</string>
+  <string name="goBackBtn">Go back!</string>
+  <string name="findDevicesButton">Find Available devices</string>
+  <string name="deleteDeviceButton">Unregister Device</string>
 </resources>

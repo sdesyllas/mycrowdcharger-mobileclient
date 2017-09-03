@@ -45,7 +45,34 @@ namespace MyCrowdCharger.Mobile.Client
 		{
 			
 			// aapt resource value: 0x7f050000
-			public const int myButton = 2131034112;
+			public const int batteryText = 2131034112;
+			
+			// aapt resource value: 0x7f050005
+			public const int deleteDevice = 2131034117;
+			
+			// aapt resource value: 0x7f050006
+			public const int deviceAddressInfo = 2131034118;
+			
+			// aapt resource value: 0x7f050002
+			public const int deviceInfo = 2131034114;
+			
+			// aapt resource value: 0x7f050003
+			public const int devicesList = 2131034115;
+			
+			// aapt resource value: 0x7f050004
+			public const int findDevices = 2131034116;
+			
+			// aapt resource value: 0x7f050009
+			public const int goBackButton = 2131034121;
+			
+			// aapt resource value: 0x7f050001
+			public const int locationText = 2131034113;
+			
+			// aapt resource value: 0x7f050007
+			public const int nickName = 2131034119;
+			
+			// aapt resource value: 0x7f050008
+			public const int registerButton = 2131034120;
 			
 			static Id()
 			{
@@ -61,7 +88,13 @@ namespace MyCrowdCharger.Mobile.Client
 		{
 			
 			// aapt resource value: 0x7f030000
-			public const int Main = 2130903040;
+			public const int DeviceListItem = 2130903040;
+			
+			// aapt resource value: 0x7f030001
+			public const int Main = 2130903041;
+			
+			// aapt resource value: 0x7f030002
+			public const int RegisterDevice = 2130903042;
 			
 			static Layout()
 			{
@@ -95,8 +128,20 @@ namespace MyCrowdCharger.Mobile.Client
 			// aapt resource value: 0x7f040001
 			public const int app_name = 2130968577;
 			
+			// aapt resource value: 0x7f040005
+			public const int deleteDeviceButton = 2130968581;
+			
+			// aapt resource value: 0x7f040004
+			public const int findDevicesButton = 2130968580;
+			
+			// aapt resource value: 0x7f040003
+			public const int goBackBtn = 2130968579;
+			
 			// aapt resource value: 0x7f040000
 			public const int hello = 2130968576;
+			
+			// aapt resource value: 0x7f040002
+			public const int registerDeviceBtn = 2130968578;
 			
 			static String()
 			{
