@@ -26,11 +26,11 @@ namespace MyCrowdCharger.Mobile.Client
         LocationManager _locationManager;
         string _locationProvider;
 
-        private TextView deviceInfo;
-        private TextView deviceAddressInfo;
-        private EditText nickName;
-        private Button registerButton;
-        private Button goBackButton;
+        private TextView _deviceInfo;
+        private TextView _deviceAddressInfo;
+        private EditText _nickName;
+        private Button _registerButton;
+        private Button _goBackButton;
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -43,15 +43,15 @@ namespace MyCrowdCharger.Mobile.Client
             SetContentView(Resource.Layout.RegisterDevice);
             // Create your application here
 
-            deviceInfo = FindViewById<TextView>(Resource.Id.deviceInfo);
-            deviceAddressInfo = FindViewById<TextView>(Resource.Id.deviceAddressInfo);
-            nickName = FindViewById<EditText>(Resource.Id.nickName);
+            _deviceInfo = FindViewById<TextView>(Resource.Id.deviceInfo);
+            _deviceAddressInfo = FindViewById<TextView>(Resource.Id.deviceAddressInfo);
+            _nickName = FindViewById<EditText>(Resource.Id.nickName);
 
-            registerButton = FindViewById<Button>(Resource.Id.registerButton);
-            goBackButton = FindViewById<Button>(Resource.Id.goBackButton);
+            _registerButton = FindViewById<Button>(Resource.Id.registerButton);
+            _goBackButton = FindViewById<Button>(Resource.Id.goBackButton);
 
-            registerButton.Click += RegisterButton_OnClick;
-            goBackButton.Click += GoBack_OnClick;
+            _registerButton.Click += RegisterButton_OnClick;
+            _goBackButton.Click += GoBack_OnClick;
         }
 
         protected override void OnResume()
@@ -73,23 +73,23 @@ namespace MyCrowdCharger.Mobile.Client
 
         public void RegisterButton_OnClick(object sender, EventArgs e)
         {
-            if (string.IsNullOrEmpty(nickName.Text))
+            if (string.IsNullOrEmpty(_nickName.Text))
             {
-                deviceAddressInfo.Text = "Nickname cannot be empty, please provide a nickname for your device!";
+                _deviceAddressInfo.Text = "Nickname cannot be empty, please provide a nickname for your device!";
                 return;
             }
             if (_currentLocation == null)
             {
-                deviceAddressInfo.Text = "Can't determine the current address. Try again in a few minutes.";
+                _deviceAddressInfo.Text = "Can't determine the current address. Try again in a few minutes.";
                 return;
             }
 
-            var createdDevice = CreateDevice(nickName.Text, _currentLocation);
-            deviceInfo.Text = createdDevice.ToString();
-            if (createdDevice.Nickname != nickName.Text) return;
-            registerButton.Visibility = ViewStates.Invisible;
-            goBackButton.Visibility = ViewStates.Visible;
-            nickName.Visibility = ViewStates.Invisible;
+            var createdDevice = CreateDevice(_nickName.Text, _currentLocation);
+            _deviceInfo.Text = createdDevice.ToString();
+            if (createdDevice.Nickname != _nickName.Text) return;
+            _registerButton.Visibility = ViewStates.Invisible;
+            _goBackButton.Visibility = ViewStates.Visible;
+            _nickName.Visibility = ViewStates.Invisible;
         }
 
         protected Device CreateDevice(string nickName, Location currentLocation)
@@ -115,14 +115,10 @@ namespace MyCrowdCharger.Mobile.Client
         {
             var filter = new IntentFilter(Intent.ActionBatteryChanged);
             var battery = RegisterReceiver(null, filter);
-            int level = battery.GetIntExtra(BatteryManager.ExtraLevel, -1);
-            int scale = battery.GetIntExtra(BatteryManager.ExtraScale, -1);
-
-            double level_0_to_100 = Math.Floor(level * 100D / scale);
-            return (int)level_0_to_100;
+            return Utilities.BatteryManager.GetCurrentBatteryLevel(battery);
         }
 
-        void InitializeLocationManager()
+        private void InitializeLocationManager()
         {
             _locationManager = (LocationManager)GetSystemService(LocationService);
             Criteria criteriaForLocationService = new Criteria
@@ -131,14 +127,7 @@ namespace MyCrowdCharger.Mobile.Client
             };
             IList<string> acceptableLocationProviders = _locationManager.GetProviders(criteriaForLocationService, true);
 
-            if (acceptableLocationProviders.Any())
-            {
-                _locationProvider = acceptableLocationProviders.First();
-            }
-            else
-            {
-                _locationProvider = string.Empty;
-            }
+            _locationProvider = acceptableLocationProviders.Any() ? acceptableLocationProviders.First() : string.Empty;
             Log.Debug("LocationManager", "Using " + _locationProvider + ".");
         }
 
@@ -152,7 +141,7 @@ namespace MyCrowdCharger.Mobile.Client
             else
             {
                 _logService.Debug($"{_currentLocation.Latitude:f6},{_currentLocation.Longitude:f6}");
-                deviceAddressInfo.Text = $"long:{_currentLocation.Longitude}, lat:{_currentLocation.Latitude}";
+                _deviceAddressInfo.Text = $"long:{_currentLocation.Longitude}, lat:{_currentLocation.Latitude}";
             }
         }
 

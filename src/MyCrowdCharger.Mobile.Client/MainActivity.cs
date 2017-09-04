@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Android.App;
+using Android.Content;
 using Android.Locations;
 using Android.Widget;
 using Android.OS;
@@ -23,11 +24,11 @@ namespace MyCrowdCharger.Mobile.Client
         LocationManager _locationManager;
         string _locationProvider;
 
-        private TextView deviceInfo;
-        private TextView locationText;
-        private TextView batteryText;
-        private TextView contributionsText;
-        private TextView locationInfoText;
+        private TextView _deviceInfo;
+        private TextView _locationText;
+        private TextView _batteryText;
+        private TextView _contributionsText;
+        private TextView _locationInfoText;
 
         private Device _currentDevice;
 
@@ -50,15 +51,15 @@ namespace MyCrowdCharger.Mobile.Client
             Button button = FindViewById<Button>(Resource.Id.findDevices);
             Button deleteButton = FindViewById<Button>(Resource.Id.deleteDevice);
 
-            batteryText = FindViewById<TextView>(Resource.Id.batteryText);
-            contributionsText = FindViewById<TextView>(Resource.Id.contributionsText);
-            locationInfoText = FindViewById<TextView>(Resource.Id.locationInfoText);
+            _batteryText = FindViewById<TextView>(Resource.Id.batteryText);
+            _contributionsText = FindViewById<TextView>(Resource.Id.contributionsText);
+            _locationInfoText = FindViewById<TextView>(Resource.Id.locationInfoText);
 
             button.Click += FindAvailableDevices;
             deleteButton.Click += DeleteDevice;
 
-            deviceInfo = FindViewById<TextView>(Resource.Id.deviceInfo);
-            locationText = FindViewById<TextView>(Resource.Id.locationText);
+            _deviceInfo = FindViewById<TextView>(Resource.Id.deviceInfo);
+            _locationText = FindViewById<TextView>(Resource.Id.locationText);
             
             var androidId = Settings.Secure.GetString(ContentResolver, Settings.Secure.AndroidId);
             _currentDevice = _crowdService.GetDeviceByName(androidId);
@@ -71,10 +72,8 @@ namespace MyCrowdCharger.Mobile.Client
             else
             {
                 this.Title = $"{_currentDevice.Nickname} - battery: {_currentDevice.BatteryLevel}%";
-                batteryText.Text = $"Battery: {_currentDevice.BatteryLevel}%";
-                contributionsText.Text = $"contributed: {_currentDevice.Contributions}";
-               
-                deviceInfo.Text = _currentDevice.ToString();
+                _batteryText.Text = $"Battery: {_currentDevice.BatteryLevel}%";
+                _contributionsText.Text = $"contributed: {_currentDevice.Contributions}";
             }
         }
 
@@ -93,7 +92,7 @@ namespace MyCrowdCharger.Mobile.Client
             _currentDevice = _crowdService.GetDeviceByName(Settings.Secure.GetString(ContentResolver, Settings.Secure.AndroidId));
             if (_currentDevice != null)
             {
-                batteryText.Text = $"Battery: {_currentDevice.BatteryLevel}%";
+                _batteryText.Text = $"Battery: {_currentDevice.BatteryLevel}%";
                 this.Title = $"{_currentDevice.Nickname} - battery: {_currentDevice.BatteryLevel}%";
             }
         }
@@ -135,17 +134,34 @@ namespace MyCrowdCharger.Mobile.Client
             else
             {
                 _logService.Debug($"{_currentLocation.Latitude:f6},{_currentLocation.Longitude:f6}");
-                locationText.Text = $"long:{_currentLocation.Longitude}, lat:{_currentLocation.Latitude}";
+                _locationText.Text = $"long:{_currentLocation.Longitude}, lat:{_currentLocation.Latitude}";
                 _currentDevice.Location[0] = location.Longitude;
                 _currentDevice.Location[1] = location.Latitude;
+                _currentDevice.BatteryLevel = GetCurrentBatteryLevel();
                 _currentDevice = _crowdService.RefreshDevice(_currentDevice);
-                var address = ReverseGeocodeCurrentLocation();
-                if (address != null)
+                _deviceInfo.Text = _currentDevice.ToString();
+                try
                 {
-                    locationInfoText.Text = $"{address.CountryName}, {address.PostalCode}, {address.Locality}, {address.SubAdminArea}";
+                    var address = ReverseGeocodeCurrentLocation();
+                    if (address != null)
+                    {
+                        _locationInfoText.Text =
+                            $"{address.CountryName}, {address.PostalCode}, {address.Locality}, {address.SubAdminArea}";
+                    }
+                }
+                catch (Exception e)
+                {
+                    _logService.Error("Could not get address", e);
                 }
                 Toast.MakeText(this, $"{_currentDevice.Nickname} location refreshed", ToastLength.Short);
             }
+        }
+
+        protected int GetCurrentBatteryLevel()
+        {
+            var filter = new IntentFilter(Intent.ActionBatteryChanged);
+            var battery = RegisterReceiver(null, filter);
+            return Utilities.BatteryManager.GetCurrentBatteryLevel(battery);
         }
 
         public void OnProviderDisabled(string provider)
@@ -163,7 +179,7 @@ namespace MyCrowdCharger.Mobile.Client
 
         }
 
-        void InitializeLocationManager()
+        private void InitializeLocationManager()
         {
             _locationManager = (LocationManager)GetSystemService(LocationService);
             Criteria criteriaForLocationService = new Criteria
@@ -172,14 +188,7 @@ namespace MyCrowdCharger.Mobile.Client
             };
             IList<string> acceptableLocationProviders = _locationManager.GetProviders(criteriaForLocationService, true);
 
-            if (acceptableLocationProviders.Any())
-            {
-                _locationProvider = acceptableLocationProviders.First();
-            }
-            else
-            {
-                _locationProvider = string.Empty;
-            }
+            _locationProvider = acceptableLocationProviders.Any() ? acceptableLocationProviders.First() : string.Empty;
             Log.Debug("LocationManager", "Using " + _locationProvider + ".");
         }
     }

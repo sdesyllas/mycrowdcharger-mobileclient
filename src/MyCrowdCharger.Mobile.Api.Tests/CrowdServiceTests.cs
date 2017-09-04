@@ -28,7 +28,7 @@ namespace MyCrowdCharger.Mobile.Api.Tests
             {
                 BatteryLevel = 80,
                 Contributions = 1,
-                Location = new[] {51.649829, -0.188136},
+                Location = new[] { -0.187961, 51.649825 },
                 Name = "Spyros",
                 Nickname = "Spyros"
             };
@@ -37,22 +37,22 @@ namespace MyCrowdCharger.Mobile.Api.Tests
             {
                 BatteryLevel = 80,
                 Contributions = 1,
-                Location = new[] { 51.651047, -0.186956 },
+                Location = new[] { -0.186663, 51.650477 },
                 Name = "Fenia",
                 Nickname = "Fenia"
             };
 
             // create a distant device 
             // devices next to each other in an address in London, distant in university of Piraeus
-            var unipiDevice = new Device
+            var oneMileDistantDevice = new Device
             {
                 BatteryLevel = 80,
                 Contributions = 1,
-                Location = new[] { 37.941650, 23.653525 },
+                Location = new[] { -0.201888, 51.655295 },
                 Name = "UnipiDevice",
                 Nickname = "UnipiDevice"
             };
-            _crowdService.RegisterDevice(unipiDevice);
+            _crowdService.RegisterDevice(oneMileDistantDevice);
             _crowdService.RegisterDevice(device1);
             _crowdService.RegisterDevice(device2);
         }
@@ -177,8 +177,8 @@ namespace MyCrowdCharger.Mobile.Api.Tests
             var unipiDevice = nearestDevices.FirstOrDefault(x => x.Name == "UnipiDevice");
             unipiDevice.Should().BeNull();
             nearestDevice.Name.Should().Be("Fenia");
-            nearestDevice.Location[0].Should().Be(51.651047);
-            nearestDevice.Location[1].Should().Be(-0.186956);
+            nearestDevice.Location[0].Should().Be(-0.186663);
+            nearestDevice.Location[1].Should().Be(51.650477);
         }
 
         [Fact]
